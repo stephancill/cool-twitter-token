@@ -14,6 +14,9 @@ sqlalchemy = "*"
 asyncpg = "*"
 install = "*"
 psycopg2-binary = "*"
+web3 = "*"
+requests-oauthlib = "*"
+itsdangerous = "*"
 
 [requires]
 python_version = "3.7"

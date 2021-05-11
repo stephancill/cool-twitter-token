@@ -1,0 +1,7 @@
+Twitter bot checks for activity on tweets
+For each user, it stores their user id or .eth address and increments by 1
+
+Transfer procedure:
+1. Mint tokens to airdrop contract
+2. Call airdrop contract with users and balances
+

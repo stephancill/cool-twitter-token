@@ -1,9 +1,11 @@
 {% extends "base.html" %}
 
+{% block title %}Login{% endblock %}
+
 {% block body %}
 
 <div>
-  <a href="{{request.app.url_for('login')}}">
+  <a href="{{request.app.url_for('login_redirect')}}">
     <button>Sign in with Twitter</button>
   </a>
 </div>
