@@ -139,3 +139,7 @@ node_modules
 *.pem
 .DS_Store
 *.pgsql
+
+
+artifacts
+contracts/cache/solidity-files-cache.json
