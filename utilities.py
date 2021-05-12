@@ -1,9 +1,12 @@
 from web3 import HTTPProvider
 from ens import ENS
 import config
+from requests_oauthlib import OAuth1Session
 
 provider = HTTPProvider(config.WEB3_PROVIDER)
 ns = ENS(provider)
+
+webhooks_url = f"{config.TWITTER_API_ENDPOINT}/account_activity/all/{config.TWITTER_WEBHOOK_ENV}/webhooks.json"
 
 def get_ens_domain_in_user(twitter_user):
     keys = ["name", "description", "screen_name"]
@@ -24,3 +27,60 @@ def get_ens_domain_in_text(text):
 
 def nslookup(domain):
     return ns.address(domain) or ns.owner(domain)
+
+def register_webhook():
+    oauth = OAuth1Session(
+        client_key=config.TWITTER_CONSUMER_KEY_WEBHOOKS,
+        client_secret=config.TWITTER_CONSUMER_SECRET_WEBHOOKS,
+        resource_owner_key=config.TWITTER_ACCESS_TOKEN_WEBHOOKS,
+        resource_owner_secret=config.TWITTER_ACCESS_TOKEN_SECRET_WEBHOOKS
+    )
+    r = oauth.post(
+        webhooks_url,
+        params={
+            "url": f"{config.SERVER_ENDPOINT}/webhooks/twitter"
+        }
+    )
+
+    print(r.json())
+
+def delete_webhook():
+    oauth = OAuth1Session(
+        client_key=config.TWITTER_CONSUMER_KEY_WEBHOOKS,
+        client_secret=config.TWITTER_CONSUMER_SECRET_WEBHOOKS,
+        resource_owner_key=config.TWITTER_ACCESS_TOKEN_WEBHOOKS,
+        resource_owner_secret=config.TWITTER_ACCESS_TOKEN_SECRET_WEBHOOKS
+    )
+
+    webhooks_r = oauth.get(webhooks_url)
+    print(webhooks_r.json())
+    if webhooks_r.ok and len(webhooks_r.json()) > 0:
+        webhook_id = webhooks_r.json()[0]["id"]
+    else:
+        return
+
+    webhook_delete_url = f"{config.TWITTER_API_ENDPOINT}/account_activity/all/{config.TWITTER_WEBHOOK_ENV}/webhooks/{webhook_id}.json"
+
+    r = oauth.delete(webhook_delete_url)
+
+    if r.ok:
+        print("Webhook deleted")
+    else:
+        print("Failed deleting webhook")
+
+def subscribe_to_owner():
+    oauth = OAuth1Session(
+        client_key=config.TWITTER_CONSUMER_KEY_WEBHOOKS,
+        client_secret=config.TWITTER_CONSUMER_SECRET_WEBHOOKS,
+        resource_owner_key=config.TWITTER_ACCESS_TOKEN_WEBHOOKS,
+        resource_owner_secret=config.TWITTER_ACCESS_TOKEN_SECRET_WEBHOOKS
+    )
+    subscriptions_url = f"{config.TWITTER_API_ENDPOINT}/account_activity/all/{config.TWITTER_WEBHOOK_ENV}/subscriptions.json"
+    r = oauth.post(subscriptions_url)
+
+    if r.ok:
+        print("Subscribed to user")
+    else:
+        print("Could not subscribe to user")
+
+    
