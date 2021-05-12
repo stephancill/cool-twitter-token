@@ -17,6 +17,16 @@ services:
     depends_on:
       - postgres
 
+  webhook_manager:
+    image: stephan-token
+    env_file:
+      - .env 
+    environment: 
+      - DATABASE_URI=postgresql://postgres:admin@postgres:5432/postgres
+    command: python reset_webhooks.py
+    depends_on:
+      - app
+
   postgres:
     image: postgres:12
     restart: unless-stopped
