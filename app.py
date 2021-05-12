@@ -1,12 +1,13 @@
 import base64
 import config
+import datetime
 from functools import wraps
 import hashlib
 import hmac
 from itsdangerous import TimedJSONWebSignatureSerializer
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 import json
-from models import Account
+from models import Account, Like
 from requests_oauthlib import OAuth1Session
 from sanic import response
 import sanic
@@ -120,35 +121,35 @@ async def claim_page(request, account: Account, user_name):
 # Defines a route for the GET request
 @app.get('/webhooks/twitter')
 async def webhook_challenge(request):
-
-    # creates HMAC SHA-256 hash from incomming token and your consumer secret
     sha256_hash_digest = hmac.new(config.TWITTER_CONSUMER_SECRET_WEBHOOKS.encode(), msg=request.args.get('crc_token').encode(), digestmod=hashlib.sha256).digest()
-
-    # construct response data with base64 encoded hash
     response = {
         'response_token': 'sha256=' + base64.b64encode(sha256_hash_digest).decode()
     }
-
-    # returns properly formatted json response
     return sanic.response.json(response)
 
 @app.post('/webhooks/twitter')
 async def receive_webhook(request):
     for event in request.json.get("favorite_events", []):
         twitter_user = event["user"]
-        print(json.dumps(event["user"]["name"]))
-        ens_domain = utilities.get_ens_domain_in_user(twitter_user)
-        if ens_domain:
-            address = utilities.nslookup(ens_domain)
-            # TODO: Send tokens
-        else:
-            twitter_id = str(twitter_user["id"])
-            account = request.ctx.db.query(Account).filter(Account.twitter_id == twitter_id).first()
-            if account:
-                account.balance += 1
-            else:
-                account = Account(twitter_id=twitter_id, balance=1)
+        tweet = event["favorited_status"]
+        print(event["user"]["name"])
+        
+        twitter_id = str(twitter_user["id"])
+        tweet_id = str(tweet["id"])
+        account = request.ctx.db.query(Account).filter(Account.twitter_id == twitter_id).first()
+        
+        if not account:
+            account = Account(twitter_id=twitter_id)
             request.ctx.db.add(account)
+            request.ctx.db.commit()
+
+        if request.ctx.db.query(Like).filter(Like.account_id == account.id, Like.tweet_id == tweet_id).count() == 0:
+            like = Like(account_id=account.id, tweet_id=tweet_id, time=datetime.datetime.utcnow())
+            account.balance += 1
+            request.ctx.db.add(like)
+            print("Balance updated")
+            
+        request.ctx.db.add(account)
                 
     return response.empty()
 
