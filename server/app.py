@@ -7,7 +7,7 @@ import hmac
 from itsdangerous import TimedJSONWebSignatureSerializer
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 import json
-from models import Account, Like
+from models import Account, Like, Nonce
 from requests_oauthlib import OAuth1Session
 from sanic import response
 import sanic
@@ -155,5 +155,14 @@ async def receive_webhook(request):
 
 
 if __name__ == "__main__":
+
+    db = Session()
+    nonce = db.query(Nonce).first()
+    if not nonce:
+        nonce = Nonce()
+        db.add(nonce)
+        db.commit()
+    db.close()
+
     app.run("0.0.0.0", port=8080, workers=1, debug=True)
 
