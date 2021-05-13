@@ -143,3 +143,4 @@ node_modules
 
 artifacts
 contracts/cache/solidity-files-cache.json
+contracts/cache/console-history.txt

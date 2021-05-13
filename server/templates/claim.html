@@ -10,5 +10,12 @@
 <div>
   Your claimable balance is: {{account.balance}} $STEPHAN
 </div>
+<button onclick="claimButtonClicked()">Claim</button>
 
+{% endblock %}
+
+{% block scripts %}
+{{super()}}
+<script src="/static/vendor/web3.min.js"></script>
+<script src="/static/js/claim.js"></script>
 {% endblock %}

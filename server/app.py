@@ -15,6 +15,7 @@ from session import Session
 import utilities
 
 app = sanic.Sanic(__name__)
+app.static("/static", "static")
 app.update_config("./config.py")
 
 env = Environment(
@@ -42,7 +43,11 @@ def inject_account():
         @wraps(f)
         def decorated_function(request, *args, **kwargs):
             serialized_token = request.cookies.get("token")
-            user_str = serializer.loads(serialized_token)
+            try:
+                user_str = serializer.loads(serialized_token)
+            except:
+                return response.redirect(request.app.url_for("root"))
+            
             user = json.loads(user_str)
                 
             account = request.ctx.db.query(Account).filter(Account.twitter_id == user["id"]).first()
@@ -117,6 +122,19 @@ async def claim_page(request, account: Account, user_name):
     template = request.app.ctx.env.get_template("claim.html")
     html = template.render(request=request, account=account, user_name=user_name)
     return response.html(html)
+
+@app.get("/claim-tx")
+@inject_account()
+async def get_mint_message(request, account: Account, **kwargs):
+    nonce = db.query(Nonce).first()
+    signed_message = utilities.sign_mint_message(account.balance, nonce.nonce)
+    return response.json({
+        "amount": account.balance,
+        "nonce": nonce.nonce,
+        "signature": signed_message.signature.hex()
+    })
+
+# TODO: Callback method for claim to update nonce
 
 # Defines a route for the GET request
 @app.get('/webhooks/twitter')

@@ -1,10 +1,12 @@
-from web3 import HTTPProvider
+from eth_account.messages import encode_defunct
+from web3 import HTTPProvider, Web3
 from ens import ENS
 import config
 from requests_oauthlib import OAuth1Session
 
 provider = HTTPProvider(config.WEB3_PROVIDER)
 ns = ENS(provider)
+web3 = Web3(provider=provider)
 
 webhooks_url = f"{config.TWITTER_API_ENDPOINT}/account_activity/all/{config.TWITTER_WEBHOOK_ENV}/webhooks.json"
 
@@ -27,6 +29,13 @@ def get_ens_domain_in_text(text):
 
 def nslookup(domain):
     return ns.address(domain) or ns.owner(domain)
+
+def sign_mint_message(amount, nonce):
+    pk = bytes.fromhex(config.CONTRACT_OWNER_PRIVATE_KEY[2:])
+    hash = Web3.solidityKeccak(["uint256", "uint256"],[amount, nonce])
+    message = encode_defunct(hexstr=hash.hex())
+    signed_message = web3.eth.account.sign_message(message, private_key=pk)
+    return signed_message
 
 def register_webhook():
     oauth = OAuth1Session(

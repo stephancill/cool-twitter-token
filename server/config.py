@@ -13,7 +13,10 @@ def get_env_value(env_variable, default=None):
         raise ImproperlyConfigured(error_msg)
 
 DATABASE_URI = get_env_value("DATABASE_URI")
+
 WEB3_PROVIDER = get_env_value("WEB3_PROVIDER")
+CONTRACT_OWNER_PRIVATE_KEY = get_env_value("CONTRACT_OWNER_PRIVATE_KEY")
+
 SERVER_ENDPOINT = get_env_value("SERVER_ENDPOINT")
 SECRET_KEY = get_env_value("SECRET_KEY")
 
