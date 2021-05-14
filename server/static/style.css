@@ -1,0 +1,88 @@
+body {
+  background-color: #EAEAEA;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center; 
+  font-size: 18px;
+}
+
+* {
+  font-family: Arial;
+  font-style: normal;
+}
+
+h1 {
+  font-size: 18px;
+  font-weight: normal;
+  margin: 0px;
+}
+
+.container {
+  width: 300px;
+}
+
+.card {
+  background-color: white;
+  padding: 34px;
+  border-radius: 5px;
+  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+}
+
+.card div {
+  padding-top: 11px;
+  padding-bottom: 11px;
+}
+
+.symbol {
+  font-weight: 400;
+  padding-left: 10px;
+}
+
+.button {
+  border-radius: 5px;
+  font-weight: bold;
+  /* font-size: 14px; */
+  font-size: 16px;
+  border: none;
+  min-height: 35px;
+  transition: 0.5s;
+  cursor: pointer;
+}
+
+.button:disabled {
+  background: #9B9B9B;
+  cursor: not-allowed;
+}
+
+.button:hover {
+  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+  transition: 1s;
+}
+
+.button-primary {
+  background: #000000;
+  color: #FFFFFF;
+  width: 80%;
+}
+
+.button-secondary {
+  background: #FFFFFF;
+  color: #000000;
+  width: 35px;
+  border: solid 1px black;
+}
+
+.footer {
+  
+  margin-top: 12px;
+  text-align: center;
+  color: #9B9B9B;
+  font-size: 12px;
+}
+
+.footer a {
+  text-decoration: underline;
+  color: inherit;
+}
+

@@ -1,7 +1,6 @@
 const { expect } = require("chai");
 require("@nomiclabs/hardhat-waffle");
 const ethereumjsABI = require("ethereumjs-abi")
-const Web3 = require("web3")
 
 async function createSignedMintOrder(account, amount, nonce) {
   var hash = ethereumjsABI.soliditySHA3(
@@ -17,7 +16,7 @@ describe("Token", function() {
     const accounts = await ethers.getSigners();
     const Token = await ethers.getContractFactory("Token");
     const token = await Token.deploy(100, accounts[0].address);
-    
+
     await token.deployed();
     expect(await token.balanceOf(accounts[0].address)).to.equal(100);
     expect(await token.balanceOf(accounts[0].address)).to.not.equal(101);

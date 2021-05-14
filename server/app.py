@@ -16,6 +16,8 @@ import utilities
 
 app = sanic.Sanic(__name__)
 app.static("/static", "static")
+app.static("/static/artifacts", "./contracts/artifacts/contracts")
+app.static("/favicon.ico", "static/favicon.ico")
 app.update_config("./config.py")
 
 env = Environment(
@@ -127,14 +129,29 @@ async def claim_page(request, account: Account, user_name):
 @inject_account()
 async def get_mint_message(request, account: Account, **kwargs):
     nonce = db.query(Nonce).first()
-    signed_message = utilities.sign_mint_message(account.balance, nonce.nonce)
+    amount = account.balance * (10 ** 18)
+    # print(amount)
+    signed_message = utilities.sign_mint_message(amount, nonce.nonce)
     return response.json({
-        "amount": account.balance,
+        "amount": f"{amount}",
         "nonce": nonce.nonce,
         "signature": signed_message.signature.hex()
     })
 
-# TODO: Callback method for claim to update nonce
+@app.post("/expire-nonce")
+@inject_account()
+async def exire_nonce(request, account: Account, **kwargs):
+    if account.balance > 0:
+        account.balance = 0
+        nonce = db.query(Nonce).first()
+        nonce.nonce += 1
+
+        request.ctx.db.add(account)
+        request.ctx.db.add(nonce)
+        request.ctx.db.commit()
+        return response.empty()
+    else:
+        return response.empty(status=403)
 
 # Defines a route for the GET request
 @app.get('/webhooks/twitter')

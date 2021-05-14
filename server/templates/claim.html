@@ -4,13 +4,28 @@
 
 {% block body %}
 
-<div>
-  Hello @{{user_name}}
+<div class="container">
+  <div class="card">
+    <div style="padding-top: 0px;">
+      Hey <strong>@{{user_name}}</strong>
+    </div>
+    <div style="color: #9D9D9D;">
+      Your claimable balance is:
+    </div>
+    <div style="font-size: 18px;">
+      {{account.balance|float}} <span style="margin-left: 10px;">$STEPHAN 🆒</span>
+    </div>
+    <div style="padding-bottom: 0px;">
+      <button class="button button-primary" onclick="claimButtonClicked()" title="Claim $STEPHAN"
+      {% if account.balance <= 0 %}disabled{% endif %}>Claim 🆒</button>
+      <button class="button button-secondary" onclick="addToWalletClicked()" title="Add $STEPHAN to your wallet">+</button>
+    </div>
+  </div>
+  <div class="footer">
+    <a href="https://twitter.com/stephancill" target="_blank">@stephancill</a>.2021
+  </div>
 </div>
-<div>
-  Your claimable balance is: {{account.balance}} $STEPHAN
-</div>
-<button onclick="claimButtonClicked()">Claim</button>
+
 
 {% endblock %}
 

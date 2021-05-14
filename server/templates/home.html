@@ -5,9 +5,13 @@
 {% block body %}
 
 <div>
-  <a href="{{request.app.url_for('login_redirect')}}">
-    <button>Sign in with Twitter</button>
-  </a>
+  <div class="card">
+    <div>
+      <a href="{{request.app.url_for('login_redirect')}}">
+        <button class="button button-primary" style="width: 100%;">Sign in with Twitter</button>
+      </a>
+    </div>
+  </div>
 </div>
 
 {% endblock %}
