@@ -7,7 +7,7 @@ import hmac
 from itsdangerous import TimedJSONWebSignatureSerializer
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 import json
-from models import Account, Like, Nonce
+from models import Account, Like
 from requests_oauthlib import OAuth1Session
 from sanic import response
 import sanic
@@ -128,13 +128,15 @@ async def claim_page(request, account: Account, user_name):
 @app.get("/claim-tx")
 @inject_account()
 async def get_mint_message(request, account: Account, **kwargs):
-    nonce = db.query(Nonce).first()
+    claimant = request.args.get("address")
+    if not claimant:
+        return response.empty(status=401)
     amount = account.balance * (10 ** 18)
     # print(amount)
-    signed_message = utilities.sign_mint_message(amount, nonce.nonce)
+    signed_message = utilities.sign_mint_message(amount, account.nonce, claimant)
     return response.json({
         "amount": f"{amount}",
-        "nonce": nonce.nonce,
+        "nonce": account.nonce,
         "signature": signed_message.signature.hex()
     })
 
@@ -143,11 +145,9 @@ async def get_mint_message(request, account: Account, **kwargs):
 async def exire_nonce(request, account: Account, **kwargs):
     if account.balance > 0:
         account.balance = 0
-        nonce = db.query(Nonce).first()
-        nonce.nonce += 1
+        account.nonce += 1
 
         request.ctx.db.add(account)
-        request.ctx.db.add(nonce)
         request.ctx.db.commit()
         return response.empty()
     else:
@@ -190,14 +190,5 @@ async def receive_webhook(request):
 
 
 if __name__ == "__main__":
-
-    db = Session()
-    nonce = db.query(Nonce).first()
-    if not nonce:
-        nonce = Nonce()
-        db.add(nonce)
-        db.commit()
-    db.close()
-
     app.run("0.0.0.0", port=8080, workers=1, debug=True)
 

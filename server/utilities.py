@@ -30,9 +30,9 @@ def get_ens_domain_in_text(text):
 def nslookup(domain):
     return ns.address(domain) or ns.owner(domain)
 
-def sign_mint_message(amount, nonce):
+def sign_mint_message(amount, nonce, claimant):
     pk = bytes.fromhex(config.CONTRACT_OWNER_PRIVATE_KEY[2:])
-    hash = Web3.solidityKeccak(["uint256", "uint256"],[amount, nonce])
+    hash = Web3.solidityKeccak(["uint256", "uint256", "address"],[amount, nonce, claimant])
     message = encode_defunct(hexstr=hash.hex())
     signed_message = web3.eth.account.sign_message(message, private_key=pk)
     return signed_message

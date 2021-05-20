@@ -44,7 +44,8 @@ async function claimButtonClicked() {
   }
   
   // Claim signature
-  let claimTx = await fetch("/claim-tx")
+  let claimAddress = window.web3.eth.defaultAccount
+  let claimTx = await fetch(`/claim-tx?address=${claimAddress}`)
   if (claimTx.ok) {
     claimTx = await claimTx.json()
   } else {
@@ -52,7 +53,8 @@ async function claimButtonClicked() {
   }
 
   let contract = await getContract()
-  const tx = await contract.methods.externalMint(new BN(claimTx.amount), claimTx.nonce, claimTx.signature).send({from: window.web3.eth.defaultAccount}, )
+  
+  const tx = await contract.methods.externalMint(new BN(claimTx.amount), claimTx.nonce, claimAddress, claimTx.signature).send({from: window.web3.eth.defaultAccount}, )
 
   if (tx.status) {
     let r = await fetch("/expire-nonce", {

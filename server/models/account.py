@@ -9,6 +9,7 @@ class Account(BaseModel):
     twitter_id = Column(String(), unique=True)
     eth_address = Column(String())
     balance = Column(INTEGER(), default=0)
+    nonce = Column(INTEGER(), default=0)
 
     likes = relationship("Like")
 

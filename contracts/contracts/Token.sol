@@ -8,7 +8,7 @@ import "@openzeppelin/contracts/cryptography/ECDSA.sol";
 contract Token is ERC20 {
     using ECDSA for bytes32;
     
-    mapping(uint256 => bool) _seenNonces;
+    mapping(address => mapping(uint256 => bool)) _seenNonces;
     address _ownerAddress;
 
     constructor(uint256 initialSupply, address ownerAddress) ERC20("Stephan's Token", "STEPHAN") {
@@ -16,17 +16,17 @@ contract Token is ERC20 {
         _ownerAddress = ownerAddress;
     }
 
-    function externalMint(uint256 amount, uint256 nonce, bytes memory sig) public {
+    function externalMint(uint256 amount, uint256 nonce, address claimant, bytes memory sig) public {
         // This recreates the message hash that was signed on the client.
-        bytes32 hash = keccak256(abi.encodePacked(amount, nonce));
+        bytes32 hash = keccak256(abi.encodePacked(amount, nonce, claimant));
         bytes32 messageHash = hash.toEthSignedMessageHash();
 
         address signer = messageHash.recover(sig);
         
-        require(signer == _ownerAddress, "Signature not by owner address");
-
-        require(!_seenNonces[nonce], "Mint already claimed");
-        _seenNonces[nonce] = true;
+        require(claimant == msg.sender, "Incorrect sender address");
+        require(signer == _ownerAddress, "Invalid signature");
+        require(!_seenNonces[msg.sender][nonce], "Mint already claimed");
+        _seenNonces[msg.sender][nonce] = true;
 
         _mint(msg.sender, amount);
 

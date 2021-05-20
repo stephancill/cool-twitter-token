@@ -2,10 +2,10 @@ const { expect } = require("chai");
 require("@nomiclabs/hardhat-waffle");
 const ethereumjsABI = require("ethereumjs-abi")
 
-async function createSignedMintOrder(account, amount, nonce) {
+async function createSignedMintOrder(account, amount, nonce, claimant) {
   var hash = ethereumjsABI.soliditySHA3(
-    ["uint256", "uint256"],
-    [amount, nonce]
+    ["uint256", "uint256", "address"],
+    [amount, nonce, claimant]
   );
   const signature = await account.signMessage(hash)
   return signature
@@ -32,22 +32,47 @@ describe("Token", function() {
 
     var amount = 5;
     var nonce = 1;
-    var signature = await createSignedMintOrder(accounts[0], amount, nonce);
+    var signature = await createSignedMintOrder(accounts[0], amount, nonce, accounts[1].address);
 
-    await token.connect(accounts[1]).externalMint(amount, nonce, signature)
+    await token.connect(accounts[1]).externalMint(amount, nonce, accounts[1].address, signature)
 
     expect(await token.balanceOf(accounts[1].address)).to.equal(amount);
-    await expect(token.connect(accounts[1]).externalMint(amount, nonce, signature)).to.be.revertedWith("Mint already claimed")
-    await expect(token.connect(accounts[2]).externalMint(amount, nonce, signature)).to.be.revertedWith("Mint already claimed")
 
-    amount = 5;
-    nonce = 2;
-    signature = await createSignedMintOrder(accounts[0], amount, nonce);
+  });
 
-    await token.connect(accounts[2]).externalMint(amount, nonce, signature)
+  it("Should handle replay attacks", async function() {
+    const accounts = await ethers.getSigners();
+    const Token = await ethers.getContractFactory("Token");
+    const token = await Token.deploy(100, accounts[0].address);
+    
+    await token.deployed();
+
+    var amount = 5;
+    var nonce = 1;
+    var signature = await createSignedMintOrder(accounts[0], amount, nonce, accounts[1].address);
+
+    await token.connect(accounts[1]).externalMint(amount, nonce, accounts[1].address, signature)
+
+    await expect(token.connect(accounts[1]).externalMint(amount, nonce, accounts[1].address, signature)).to.be.revertedWith("Mint already claimed")
+    // await expect(token.connect(accounts[2]).externalMint(amount, nonce, accounts[2].address, signature)).to.be.revertedWith("Mint already claimed")
+  });
+    
+  it("Should handle mints with invalid signatures", async function() {
+    const accounts = await ethers.getSigners();
+    const Token = await ethers.getContractFactory("Token");
+    const token = await Token.deploy(100, accounts[0].address);
+    
+    await token.deployed();
+
+    var amount = 5;
+    var nonce = 2;
+    var signature = await createSignedMintOrder(accounts[0], amount, nonce, accounts[2].address);
+
+    await token.connect(accounts[2]).externalMint(amount, nonce, accounts[2].address, signature)
     expect(await token.balanceOf(accounts[2].address)).to.equal(amount);
 
-    signature = await createSignedMintOrder(accounts[1], amount, nonce);
-    await expect(token.connect(accounts[1]).externalMint(amount, nonce, signature)).to.be.revertedWith("Signature not by owner address")
+    signature = await createSignedMintOrder(accounts[1], amount, nonce, accounts[1].address);
+    await expect(token.connect(accounts[1]).externalMint(amount, nonce, accounts[1].address, signature)).to.be.revertedWith("Invalid signature")
   });
+    
 });
