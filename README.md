@@ -10,3 +10,7 @@
 2. `yarn hardhat node`
 3. `yarn hardhat --network localhost run scripts/deploy.js`
 4. Copy deployment address from output and enter it in `server/static/js/claim.js`
+
+## TODO
+[ ] Move contract dev environment to brownie
+[ ] Bridge on different networks and L2s
