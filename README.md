@@ -1,4 +1,4 @@
-# $STEPHAN
+# $COOL
 
 ## Running
 1. Copy env.template into `.env` and populate

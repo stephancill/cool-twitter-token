@@ -11,7 +11,7 @@ contract Token is ERC20 {
     mapping(address => mapping(uint256 => bool)) _seenNonces;
     address _ownerAddress;
 
-    constructor(uint256 initialSupply, address ownerAddress) ERC20("Stephan's Token", "STEPHAN") {
+    constructor(uint256 initialSupply, address ownerAddress) ERC20("Cool Token", "COOL") {
         _mint(ownerAddress, initialSupply);
         _ownerAddress = ownerAddress;
     }
