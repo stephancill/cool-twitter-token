@@ -1,6 +1,7 @@
 # $COOL
 
 ## Running
+0. `cd server`
 1. Copy env.template into `.env` and populate
 2. `docker-compose up -d`
 3. Server will be running on port 8080
@@ -12,5 +13,5 @@
 4. Copy deployment address from output and enter it in `server/static/js/claim.js`
 
 ## TODO
-[ ] Move contract dev environment to brownie
-[ ] Bridge on different networks and L2s
+- [ ] Move contract dev environment to brownie
+- [ ] Bridge on different networks and L2s
